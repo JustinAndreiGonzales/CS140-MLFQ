@@ -81,7 +81,7 @@ class ShortestJobFirst:
         return self.process_queue.pop()
 
     def sort_queue(self) -> None:
-        ...
+        self.process_queue.sort() # check nalang if tama
 
 class IO:
     def __init__(self):
@@ -92,3 +92,28 @@ class IO:
 
     def pop_process(self) -> Process:
         return self.process_queue.pop()
+    
+
+class MLFQ:
+    def __init__(self, Q1: RoundRobinQueue, Q2: FirstComeFirstServeQueue, context_switch_time: int):
+        self.curr_time = 0
+        self.Q1 = Q1
+        self.Q2 = Q2
+        self.Q3 = ShortestJobFirst()
+        self.IO = IO()
+        self.context_switch_time = context_switch_time
+        self.processes: list[Process] = []
+        self.CPU: Process | None = None
+        self.is_finish_running: bool = False
+    
+    def push_to_queue(self, queue: Queue, process: Process) -> None:
+        queue.push_process(process)
+
+    def pop_process(self, queue: Queue) -> Process:
+        return queue.pop_process()
+
+    def add_process(self, process: Process) -> None:
+        self.processes.append(process)
+
+    def update_time_stamp(self) -> None:
+        ...
