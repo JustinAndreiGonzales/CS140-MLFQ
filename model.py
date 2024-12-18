@@ -171,7 +171,7 @@ class MLFQ:
         # if CPU is empty
         if (self.CPU == EMPTY_PROCESS):
             return
-
+        print("time")
         # increment CPU process
         self.CPU.current_time_burst += 1
         self.CPU.current_time_in_queue += 1

@@ -7,5 +7,5 @@ view = View()
 inputs = view.get_input()
 model = MLFQ(inputs.Q1, inputs.Q2, inputs.CS)
 controller = Controller(model, view)
-controller.run()
+controller.run(inputs)
 

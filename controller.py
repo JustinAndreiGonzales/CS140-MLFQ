@@ -1,5 +1,5 @@
 from model import MLFQ, Process, EMPTY_PROCESS
-from view import Timestamp, View, ProcessesStats, Input
+from view import Timestamp, View, ProcessesStats, User_input
 
 class Controller:
     def __init__(self, model: MLFQ, view: View):
@@ -59,25 +59,26 @@ class Controller:
     #         ProcessesStats(process_names, completion_times, arrival_times, waiting_times, turnaround_times, avg_turnaround_time)
     #     )
 
-    def input_to_model(self, inputs: Input):
+    def input_to_model(self, inputs: User_input):
         processes = inputs.processes
         for p in processes:
             self._model.add_process(Process(p["name"], p["arrival_time"], p["bursts"]))
         
 
-    def run(self):
-        self.input_to_model(self._view.get_input())
+    def run(self, inputs: User_input):
+        self.input_to_model(inputs)
         self._model.sort_incoming_processes()
         self._model.processes = sorted(self._model.processes, key=lambda p: p.name)
+        self._model.CPU = self._model.incoming_processes.pop(0)
         self.get_timestamp() # for time = 0
-
-        while (self._model.incoming_processes and \
-                self._model.Q1.process_queue and \
-                self._model.Q2.process_queue and \
-                self._model.Q3.process_queue and \
-                self._model.IO and \
-                self._model.CPU == EMPTY_PROCESS):
+        while (self._model.incoming_processes or \
+                self._model.Q1.process_queue or \
+                self._model.Q2.process_queue or \
+                self._model.Q3.process_queue or \
+                self._model.IO or \
+                self._model.CPU != EMPTY_PROCESS):       
             self._model.update_time_stamp()
             self.get_timestamp()
+
         print("SIMULATION DONE\n") # tinamad na
         # self.get_statistics()

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Any
 
 @dataclass(frozen=True)
-class Input:
+class User_input:
     N: int
     Q1: int
     Q2: int
@@ -49,7 +49,7 @@ class View:
             }
             processes.append(process_dict)
 
-        return Input(N, Q1, Q2, CS, processes)
+        return User_input(N, Q1, Q2, CS, processes)
 
     def print_timestamp(self, ts: Timestamp) -> None:
         print(f"At Time = {ts.time}")
