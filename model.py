@@ -1,7 +1,5 @@
-from multiprocessing import process
-import time
 from typing import Protocol
-from project_types import Status
+
 
 class Process:
     def __init__(self, name: str, arrival_time: int, burst_times: list[int]):
@@ -98,10 +96,10 @@ class IO:
     
 
 class MLFQ:
-    def __init__(self, Q1: RoundRobinQueue, Q2: FirstComeFirstServeQueue, context_switch_time: int):
+    def __init__(self, q1_time: int, q2_time: int, context_switch_time: int):
         self.curr_time = 0
-        self.Q1 = Q1
-        self.Q2 = Q2
+        self.Q1 = RoundRobinQueue(q1_time)
+        self.Q2 = FirstComeFirstServeQueue(q2_time)
         self.Q3 = ShortestJobFirst()
         self.IO = IO()
         self.CPU: Process = EMPTY_PROCESS # dummy 
@@ -116,7 +114,7 @@ class MLFQ:
         self.incoming_processes: list[Process] = []
         self.newlyaddedprocesses: list[Process] = []
         self.finished_processes: list[Process] = []
-        self.demoted_process: Process | None = None
+        self.demoted_process: Process = EMPTY_PROCESS
     
     def enqueue_to_queue(self, queue: Queue, process: Process) -> None:
         queue.enqueue_process(process)
