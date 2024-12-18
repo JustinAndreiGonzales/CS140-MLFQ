@@ -1,5 +1,3 @@
-from re import M
-from tarfile import LENGTH_NAME
 from model import MLFQ, Process
 from view import Timestamp, View, ProcessesStats, Input
 

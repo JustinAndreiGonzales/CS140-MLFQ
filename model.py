@@ -106,8 +106,10 @@ class MLFQ:
         self.IO = IO()
         self.context_switch_time = context_switch_time
         self.processes: list[Process] = []
-        self.CPU: Process = Process(" ", -1, []) # dummy value
+        self.CPU: Process = Process(" ", -1, []) # dummy 
         self.is_finish_running: bool = False
+        self.context_switch_time_used = 0    # time at context switch
+        self.is_in_context_switch: bool = False
         self.incoming_processes: list[Process] = []
 
         self.newlyaddedprocesses: list[Process] = []
@@ -127,6 +129,14 @@ class MLFQ:
     def sort_incoming_processes(self) -> None:
         self.incoming_processes = sorted(self.incoming_processes, key=lambda p: (p.arrival_time, p.name))
 
+    def check_current_queue(self, queue_index) -> Queue:
+            if (queue_index == 1):
+                return self.Q1
+            elif (queue_index == 2):
+                return self.Q2
+            else: #queue_index == 3
+                return self.Q3
+            
     def update_time_stamp(self) -> None:
         # increment time
         self.curr_time += 1
@@ -135,6 +145,10 @@ class MLFQ:
         if (len(self.IO.process_queue) != 0):
             for p in self.IO.process_queue:
                 p.current_time_burst += 1
+
+        if (self.is_in_context_switch):
+            
+            return
 
         # increment CPU process
         self.CPU.current_time_burst += 1
@@ -148,41 +162,46 @@ class MLFQ:
                     self.incoming_processes.remove(p)
                     self.Q1.enqueue_process(p)
 
-    def check_current_queue(self, queue_index) -> Queue:
-            if (queue_index == 1):
-                return self.Q1
-            elif (queue_index == 2):
-                return self.Q2
-            else: #queue_index == 3
-                return self.Q3
-        
+        self.next_process()
+
     def next_process(self):
-        current_queue = self.check_current_queue(self.CPU)
+        current_queue: Queue = self.check_current_queue(self.CPU)
 
         if (current_queue in [self.Q1, self.Q2, self.Q3] and self.CPU != None):
+            # checking CPU burst time
             if self.CPU.current_time_burst >= self.CPU.burst_times[0]:
+                # check if process is finished
                 if len(self.CPU.burst_times) == 1:
-                    self.finished_processes.append(current_queue.dequeue_process())
-                else:
-                    self.IO.enqueue_process(current_queue.dequeue_process())
+                    self.finished_processes.append(self.CPU)
+                else: # check if there is next burst
+                    self.IO.enqueue_process(self.CPU)
+
+                # context switch?
 
                 self.CPU = current_queue.dequeue_process()
                 return
 
+            # check time allotment
             if isinstance(current_queue, RoundRobinQueue) or isinstance(current_queue, FirstComeFirstServeQueue):
                 if self.CPU.current_time_in_queue >= current_queue.time_allotment:
                     self.demoted_process = self.CPU
 
                     lower_queue = self.check_current_queue(self.CPU.current_queue + 1)
-                    lower_queue.enqueue_process(current_queue.dequeue_process())
+                    lower_queue.enqueue_process(self.CPU)
 
                     self.CPU = current_queue.dequeue_process()
                     return
 
+                # check quantum
                 if current_queue == self.Q1:
                     if self.Q1.quantum_used >= self.Q1.quantum_time:
-                        self.Q1.enqueue_process(self.Q1.dequeue_process())
+                        self.Q1.enqueue_process(self.CPU)
 
                     self.CPU = self.Q1.dequeue_process()
                     return
             
+
+   4 |  5  |  6  | 7
+ 5/5 |     |     | new process
+
+incrme
