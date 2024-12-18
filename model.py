@@ -191,63 +191,40 @@ class MLFQ:
 
         self.next_process()
 
-    def next_process(self):
-        current_queue: Queue = self.check_current_queue(self.CPU)
+    def check_CPU(self):
+        if self.CPU.current_time_burst >= self.CPU.burst_times[0]:
+            # check if process is finished
+            if len(self.CPU.burst_times) == 1:
+                self.finished_processes.append(self.CPU)
+            # check if there is next burst
+            else:
+                self.IO.enqueue_process(self.CPU)
 
-        if (current_queue in [self.Q1, self.Q2, self.Q3] and self.CPU != None):
-            # checking CPU burst time
-            if self.CPU.current_time_burst >= self.CPU.burst_times[0]:
-                # check if process is finished
-                if len(self.CPU.burst_times) == 1:
-                    self.finished_processes.append(self.CPU)
-                else: # check if there is next burst
-                    self.IO.enqueue_process(self.CPU)
+            # reset current_time_burst and remove finished burst time
+            self.CPU.current_time_burst = 0
+            self.CPU.burst_times.pop(0)
 
-                # reset current_time_burst and remove finished burst time
-                self.CPU.current_time_burst = 0
-                self.CPU.burst_times.pop(0)
+    def check_time_allotment(self, current_queue):
+        if self.CPU.current_time_in_queue >= current_queue.time_allotment:
+            self.demoted_process = self.CPU
 
-                self.check_IO()
+            lower_queue = self.check_current_queue(self.CPU.current_queue + 1)
+            lower_queue.enqueue_process(self.CPU)
 
-                # context switch
-                self.is_in_context_switch = True
-                self.CPU = EMPTY_PROCESS # dummy 
-                self.process_holder = self.next_process_to_run()
-                return
+            # reset current_time_in_queue since demoted
+            self.CPU.current_queue += 1
+            self.CPU.current_time_in_queue = 0
+            
+            return True
+        return False
 
-            # check time allotment
-            if isinstance(current_queue, RoundRobinQueue) or isinstance(current_queue, FirstComeFirstServeQueue):
-                if self.CPU.current_time_in_queue >= current_queue.time_allotment:
-                    self.demoted_process = self.CPU
+    def check_quantum(self):
+        if self.Q1.quantum_used >= self.Q1.quantum_time:
+            self.Q1.enqueue_process(self.CPU)
+            self.Q1.quantum_used = 0
 
-                    lower_queue = self.check_current_queue(self.CPU.current_queue + 1)
-                    lower_queue.enqueue_process(self.CPU)
-
-                    # reset current_time_in_queue since demoted
-                    self.CPU.current_queue += 1
-                    self.CPU.current_time_in_queue = 0
-                    
-                    self.check_IO()
-
-                    # context switch
-                    self.is_in_context_switch = True
-                    self.CPU = EMPTY_PROCESS # dummy 
-                    self.process_holder = self.next_process_to_run()
-                    return
-
-                # check quantum
-                if current_queue == self.Q1:
-                    if self.Q1.quantum_used >= self.Q1.quantum_time:
-                        self.Q1.enqueue_process(self.CPU)
-                        self.Q1.quantum_used = 0
-
-                        self.check_IO()
-
-                        # context switch
-                        self.is_in_context_switch = True
-                        self.CPU = EMPTY_PROCESS # dummy 
-                        self.process_holder = self.next_process_to_run()
-                        return
+            return True
+        return False
 
     def check_IO(self):
         if (self.IO.process_queue):
@@ -261,3 +238,24 @@ class MLFQ:
                     proc.burst_times.pop(0)
                     proc.current_time_burst = 0
         
+    def next_process(self):
+        current_queue: Queue = self.check_current_queue(self.CPU)
+        is_quantum, is_time_allotment = False, False
+
+        if current_queue == self.Q1:
+            is_quantum = self.check_quantum()
+        
+        if isinstance(current_queue, RoundRobinQueue) or isinstance(current_queue, FirstComeFirstServeQueue):
+            if not is_quantum:
+                is_time_allotment = self.check_time_allotment(current_queue)
+
+        if not is_quantum or not is_time_allotment:
+            self.check_CPU()
+        
+        self.check_IO()
+
+        # context switch
+        self.is_in_context_switch = True
+        self.CPU = EMPTY_PROCESS
+        self.process_holder = self.next_process_to_run()
+
