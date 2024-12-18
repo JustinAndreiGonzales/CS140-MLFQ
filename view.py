@@ -1,6 +1,14 @@
 
 from dataclasses import dataclass
+from typing import Any
 
+@dataclass(frozen=True)
+class Input:
+    N: int
+    Q1: int
+    Q2: int
+    CS: int
+    processes: list[dict[str, Any]]
 
 @dataclass(frozen=True)
 class Timestamp:
@@ -14,13 +22,26 @@ class Timestamp:
     io: list[str] | None
     demoted: str | None
 
-
 class View:
     def __init__(self):
         ...
-
+        
     def get_input(self):
-        ...
+        N = int(input())
+        Q1 = int(input())
+        Q2 = int(input())
+        CS = int(input())
+        processes = []
+        for _ in range(N):
+            process = input().split(";")
+            process_dict = {
+                "name": process[0],
+                "arrival_time": int(process[1]),
+                "bursts": [int(x) for x in process[2:]]
+            }
+            processes.append(process_dict)
+
+        return Input(N, Q1, Q2, CS, processes)
 
     def print_timestamp(self, ts: Timestamp) -> None:
         print(f"At Time = {ts.time}")
@@ -38,11 +59,3 @@ class View:
     def print_statistics(self) -> None:
         ...
         # ano input?
-
-view = View()
-
-t1 = Timestamp(4, ['A', 'B'], 'C', [], ['A'], ['B', 'C'],
-               'D', ['A', 'B'], 'Z')
-
-view.print_timestamp(t1)
-view.print_timestamp(t1)
