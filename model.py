@@ -116,6 +116,10 @@ class MLFQ:
 
     def add_process(self, process: Process) -> None:
         self.processes.append(process)
+        self.incoming_processes.append(process)
+
+    def sort_incoming_processes(self) -> None:
+        self.incoming_processes = sorted(self.incoming_processes, key=lambda p: (p.arrival_time, p.name))
 
     def update_time_stamp(self) -> None:
         ...
