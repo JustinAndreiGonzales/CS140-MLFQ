@@ -18,7 +18,9 @@ class Timestamp:
     q1: list[str]
     q2: list[str]
     q3: list[str]
-    cpu: str
+    is_in_context_switch: bool
+    switching_process: str
+    cpu: str | None
     io: list[str] | None
     demoted: str | None
 
@@ -57,7 +59,14 @@ class View:
             for p in ts.process_done:
                 print(f"{p} DONE")
         print(f"Queues : [{", ".join(ts.q1)}];[{", ".join(ts.q2)}];[{", ".join(ts.q3)}]")
-        print(f"CPU : {ts.cpu}")
+
+        if (ts.is_in_context_switch):
+            print(f"CPU : CONTEXT SWITCHING TO {ts.switching_process}")
+        elif (ts.cpu == None):
+            print(f"CPU : NO PROCESS RUNNING")
+        else:
+            print(f"CPU : {ts.cpu}")
+            
         if (ts.io != None):
             print(f"I/O : [{", ".join(ts.io)}]")
         if (ts.demoted != None):
