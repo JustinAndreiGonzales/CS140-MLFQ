@@ -15,23 +15,27 @@ class Controller:
         q1 = []
         q2 = []
         q3 = []
-        if len(self._model.Q1.process_queue) != 0:
+        if self._model.Q1.process_queue:
             for p in self._model.Q1.process_queue:
                 q1.append(p.name)
-        if len(self._model.Q2.process_queue) != 0:
+        if self._model.Q2.process_queue:
             for p in self._model.Q2.process_queue:
                 q2.append(p.name)
-        if len(self._model.Q3.process_queue) != 0:
+        if self._model.Q3.process_queue:
             for p in self._model.Q3.process_queue:
                 q3.append(p.name)
-        cpu = self._model.CPU.name
+
+        is_in_context_switch = self._model.is_in_context_switch
+        switching_process = self._model.process_holder.name
+
+        cpu = None if self._model.CPU.arrival_time == -1 else self._model.CPU.name
         io = None if not self._model.IO.process_queue else [p.name for p in self._model.IO.process_queue]
         self._model.IO.process_queue = []
         demoted = self._model.demoted_process
         self._model.demoted_process = None
 
         self._view.print_timestamp(
-            Timestamp(time, arriving_processes, processes_done, q1, q2, q3, cpu, io, demoted)
+            Timestamp(time, arriving_processes, processes_done, q1, q2, q3, is_in_context_switch, switching_process, cpu, io, demoted)
         )
 
     def get_statistics(self):
