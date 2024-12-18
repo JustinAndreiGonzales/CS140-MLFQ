@@ -14,7 +14,7 @@ class Input:
 class Timestamp:
     time: int
     arriving_process: list[str] | None
-    process_done: str | None
+    process_done: list[str] | None
     q1: list[str]
     q2: list[str]
     q3: list[str]
@@ -54,7 +54,8 @@ class View:
         if (ts.arriving_process != None):
             print(f"Arriving : [{", ".join(ts.arriving_process)}]")
         if (ts.process_done != None):
-            print(f"{ts.process_done} DONE")
+            for p in ts.process_done:
+                print(f"{p} DONE")
         print(f"Queues : [{", ".join(ts.q1)}];[{", ".join(ts.q2)}];[{", ".join(ts.q3)}]")
         print(f"CPU : {ts.cpu}")
         if (ts.io != None):

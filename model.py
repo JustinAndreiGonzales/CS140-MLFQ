@@ -1,3 +1,5 @@
+from multiprocessing import process
+import time
 from typing import Protocol
 from project_types import Status
 
@@ -104,10 +106,11 @@ class MLFQ:
         self.IO = IO()
         self.context_switch_time = context_switch_time
         self.processes: list[Process] = []
-        self.CPU: Process = Process(" ", -1, [])
+        self.CPU: Process = Process(" ", -1, []) # dummy value
         self.is_finish_running: bool = False
-
         self.incoming_processes: list[Process] = []
+
+        self.newlyaddedprocesses: list[Process] = []
     
     def enqueue_to_queue(self, queue: Queue, process: Process) -> None:
         queue.enqueue_process(process)
@@ -123,9 +126,27 @@ class MLFQ:
         self.incoming_processes = sorted(self.incoming_processes, key=lambda p: (p.arrival_time, p.name))
 
     def update_time_stamp(self) -> None:
-        ...
+        # increment time
+        self.curr_time += 1
 
-    def check_current_queue(self, queue_index) -> Queue:
+        # increment IO processes
+        if (len(self.IO.process_queue) != 0):
+            for p in self.IO.process_queue:
+                p.current_time_burst += 1
+
+        # increment CPU process
+        self.CPU.current_time_burst += 1
+        self.CPU.current_time_in_queue += 1
+        self.Q1.increment_quantum()
+
+        # enqueue newly arriving processes
+        if (len(self.incoming_processes) != 0):
+            for p in self.incoming_processes:
+                if(self.curr_time == p.arrival_time):
+                    self.incoming_processes.remove(p)
+                    self.Q1.enqueue_process(p)
+
+def check_current_queue(self, queue_index) -> Queue:
         if (queue_index == 1):
             return self.Q1
         elif (queue_index == 2):
