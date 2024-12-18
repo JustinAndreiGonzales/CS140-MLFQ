@@ -29,7 +29,7 @@ class Process:
     def increment_allotment_in_queue(self) -> None:
         self.current_time_in_queue += 1
 
-    def pop_burst_time(self):
+    def dequeue_burst_time(self):
         ...
 
     def change_state(self):
@@ -37,10 +37,10 @@ class Process:
 
 
 class Queue(Protocol):
-    def push_process(self, p: Process) -> None:
+    def enqueue_process(self, p: Process) -> None:
         ...
 
-    def pop_process(self) -> Process:
+    def dequeue_process(self) -> Process:
         ...
 
 
@@ -53,32 +53,32 @@ class RoundRobinQueue:
     def increment_quantum(self) -> None:
         self.quantum_used += 1
 
-    def push_process(self, p: Process) -> None:
+    def enqueue_process(self, p: Process) -> None:
         self.process_queue.append(p)
 
-    def pop_process(self) -> Process:
-        return self.process_queue.pop()
+    def dequeue_process(self) -> Process:
+        return self.process_queue.pop(0)
 
 class FirstComeFirstServeQueue:
     def __init__(self, time_allotment: int):
         self.process_queue: list[Process] = []
         self.time_allotment = time_allotment
 
-    def push_process(self, p: Process) -> None:
+    def enqueue_process(self, p: Process) -> None:
         self.process_queue.append(p)
 
-    def pop_process(self) -> Process:
-        return self.process_queue.pop()
+    def dequeue_process(self) -> Process:
+        return self.process_queue.pop(0)
 
 class ShortestJobFirst:
     def __init__(self):
         self.process_queue: list[Process] = []
 
-    def push_process(self, p: Process) -> None:
+    def enqueue_process(self, p: Process) -> None:
         self.process_queue.append(p)
 
-    def pop_process(self) -> Process:
-        return self.process_queue.pop()
+    def dequeue_process(self) -> Process:
+        return self.process_queue.pop(0)
 
     def sort_queue(self) -> None:
         self.process_queue.sort() # check nalang if tama
@@ -87,11 +87,11 @@ class IO:
     def __init__(self):
         self.process_queue: list[Process] = []
 
-    def push_process(self, p: Process) -> None:
+    def enqueue_process(self, p: Process) -> None:
         self.process_queue.append(p)
 
-    def pop_process(self) -> Process:
-        return self.process_queue.pop()
+    def dequeue_process(self) -> Process:
+        return self.process_queue.pop(0)
     
 
 class MLFQ:
@@ -108,11 +108,11 @@ class MLFQ:
 
         self.incoming_processes: list[Process] = []
     
-    def push_to_queue(self, queue: Queue, process: Process) -> None:
-        queue.push_process(process)
+    def enqueue_to_queue(self, queue: Queue, process: Process) -> None:
+        queue.enqueue_process(process)
 
-    def pop_process(self, queue: Queue) -> Process:
-        return queue.pop_process()
+    def dequeue_process(self, queue: Queue) -> Process:
+        return queue.dequeue_process()
 
     def add_process(self, process: Process) -> None:
         self.processes.append(process)
