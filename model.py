@@ -105,6 +105,8 @@ class MLFQ:
         self.processes: list[Process] = []
         self.CPU: Process | None = None
         self.is_finish_running: bool = False
+
+        self.incoming_processes: list[Process] = []
     
     def push_to_queue(self, queue: Queue, process: Process) -> None:
         queue.push_process(process)
