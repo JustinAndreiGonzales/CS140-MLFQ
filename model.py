@@ -46,6 +46,7 @@ class Queue(Protocol):
 
 class RoundRobinQueue:
     def __init__(self, time_allotment: int):
+        self.quantum_time = 4
         self.process_queue: list[Process] = []
         self.time_allotment = time_allotment
         self.quantum_used: int = 0
@@ -103,7 +104,7 @@ class MLFQ:
         self.IO = IO()
         self.context_switch_time = context_switch_time
         self.processes: list[Process] = []
-        self.CPU: Process | None = None
+        self.CPU: Process = Process(" ", -1, [])
         self.is_finish_running: bool = False
 
         self.incoming_processes: list[Process] = []
@@ -123,3 +124,42 @@ class MLFQ:
 
     def update_time_stamp(self) -> None:
         ...
+
+    def check_current_queue(self, queue_index) -> Queue:
+        if (queue_index == 1):
+            return self.Q1
+        elif (queue_index == 2):
+            return self.Q2
+        elif (queue_index == 3):
+            return self.Q3
+    
+    def next_process(self):
+        current_queue = self.check_current_queue(self.CPU)
+
+        if (current_queue in [self.Q1, self.Q2, self.Q3] and self.CPU != None):
+            if self.CPU.current_time_burst >= self.CPU.burst_times[0]:
+                if len(self.CPU.burst_times) == 1:
+                    self.finished_processes.append(current_queue.dequeue_process())
+                else:
+                    self.IO.enqueue_process(current_queue.dequeue_process())
+
+                self.CPU = current_queue.dequeue_process()
+                return
+
+            if isinstance(current_queue, RoundRobinQueue) or isinstance(current_queue, FirstComeFirstServeQueue):
+                if self.CPU.current_time_in_queue >= current_queue.time_allotment:
+                    self.demoted_process.append(self.CPU)
+
+                    lower_queue = check_current_queue(self.CPU.current_queue + 1)
+                    lower_queue.enqueue_process(current_queue.dequeue_process())
+
+                    self.CPU = current_queue.dequeue_process()
+                    return
+
+                if current_queue == self.Q1:
+                    if self.Q1.quantum_used >= self.Q1.quantum_time:
+                        self.Q1.enqueue_process(self.Q1.dequeue_process())
+
+                    self.CPU = self.Q1.dequeue_process()
+                    return
+            
