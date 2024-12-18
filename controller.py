@@ -1,4 +1,4 @@
-from model import MLFQ, Process
+from model import MLFQ, Process, EMPTY_PROCESS
 from view import Timestamp, View, ProcessesStats, Input
 
 class Controller:
@@ -65,12 +65,15 @@ class Controller:
         self.input_to_model(self._view.get_input())
         self._model.sort_incoming_processes()
         self._model.processes = sorted(self._model.processes, key=lambda p: p.name)
+        self.get_timestamp() # for time = 0
 
-        while (len(self._model.incoming_processes) != 0 and \
-                len(self._model.Q1.process_queue) != 0 and \
-                len(self._model.Q2.process_queue) != 0 and \
-                len(self._model.Q3.process_queue) != 0):
+        while (self._model.incoming_processes and \
+                self._model.Q1.process_queue and \
+                self._model.Q2.process_queue and \
+                self._model.Q3.process_queue and \
+                self._model.IO and \
+                self._model.CPU == EMPTY_PROCESS):
             self._model.update_time_stamp()
             self.get_timestamp()
-        print("SIMULATION DONE") # tinamad na
+        print("SIMULATION DONE\n") # tinamad na
         self.get_statistics()
