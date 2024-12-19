@@ -33,9 +33,6 @@ class Process:
     def dequeue_burst_time(self):
         ...
 
-    def change_state(self):
-        ...
-
 EMPTY_PROCESS = Process(" ", -1, []) # dummy 
 
 class Queue(Protocol):
@@ -147,7 +144,8 @@ class MLFQ:
             current_queue = self.check_current_queue(queue_index)
 
             if current_queue.process_queue:
-                return current_queue.dequeue_process()
+                # return current_queue.dequeue_process()
+                return current_queue.process_queue[0]
             queue_index += 1
         
         return Process(" ", -1, []) # dummy
@@ -174,6 +172,7 @@ class MLFQ:
         if (self.is_in_context_switch):
             if self.context_switch_time <= self.context_switch_time_used:
                 self.CPU = self.process_holder
+                self.check_current_queue(self.CPU.current_queue).dequeue_process()
                 self.context_switch_time_used = 0
                 self.is_in_context_switch = False
             else:
@@ -202,6 +201,8 @@ class MLFQ:
             # check if process is finished
             if len(self.CPU.burst_times) == 1:
                 self.finished_processes.append(self.CPU)
+
+                self.CPU.completion_time = self.curr_time
 
                 """
                 update stuff needed for a finished process
