@@ -11,7 +11,7 @@ class Controller:
         ...
 
     def get_statistics(self):
-        processes = self._model.processes
+        processes = sorted(self._model.processes, lambda p: p.name)
         process_names = []
         completion_times = []
         arrival_times = []

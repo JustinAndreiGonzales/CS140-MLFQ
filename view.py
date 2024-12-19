@@ -27,6 +27,9 @@ class ProcessesStats:
     process_names: list[str]
     completion_times: list[int]
     arrival_times: list[int]
+    waiting_times: list[int]
+    turnaround_times: list[int]
+    avg_turnaround_time = float
 
 class View:
     def __init__(self):
@@ -68,10 +71,10 @@ class View:
             completion_time = processes_info.completion_times[i]
             arrival_time = processes_info.arrival_times[i]
             ta_time = processes_info.turnaround_times[i]
-            print(f'Turn-around time for Process {process_name} : {completion_time} - {arrival_time} = {ta_time[i]}')
+            print(f"Turn-around time for Process {process_name} : {completion_time} - {arrival_time} = {ta_time[i]}")
 
-        print(f'Average Turn-around time = {processes_info.avg_turnaround_time}') 
+        print(f"Average Turn-around time = {processes_info.avg_turnaround_time}") 
 
         for i, process_name in enumerate(processes_info.process_names):
             waiting_time = processes_info.waiting_times[i]
-            print(f'Waiting time for Process {process_name} : {waiting_time}')
+            print(f"Waiting time for Process {process_name} : {waiting_time}")
