@@ -129,7 +129,7 @@ class MLFQ:
     def sort_incoming_processes(self) -> None:
         self.incoming_processes = sorted(self.incoming_processes, key=lambda p: (p.arrival_time, p.name))
 
-    def check_current_queue(self, queue_index) -> Queue:
+    def check_current_queue(self, queue_index: int) -> Queue:
         if (queue_index == 1):
             return self.Q1
         elif (queue_index == 2):
@@ -148,7 +148,7 @@ class MLFQ:
                 return current_queue.process_queue[0]
             queue_index += 1
         
-        return Process(" ", -1, []) # dummy
+        return EMPTY_PROCESS # dummy
 
     def check_arriving_processes(self):
         if (self.incoming_processes):
@@ -196,48 +196,6 @@ class MLFQ:
 
         self.next_process()
 
-    def check_CPU(self):
-        if self.CPU.current_time_burst >= self.CPU.burst_times[0]:
-            # check if process is finished
-            if len(self.CPU.burst_times) == 1:
-                self.finished_processes.append(self.CPU)
-
-                self.CPU.completion_time = self.curr_time
-
-                """
-                update stuff needed for a finished process
-                """
-
-            # check if there is next burst
-            else:
-                self.IO.enqueue_process(self.CPU)
-
-            # reset current_time_burst and remove finished burst time
-            self.CPU.current_time_burst = 0
-            self.CPU.burst_times.pop(0)
-
-    def check_time_allotment(self, current_queue):
-        if self.CPU.current_time_in_queue >= current_queue.time_allotment:
-            self.demoted_process = self.CPU
-
-            lower_queue = self.check_current_queue(self.CPU.current_queue + 1)
-            lower_queue.enqueue_process(self.CPU)
-
-            # reset current_time_in_queue since demoted
-            self.CPU.current_queue += 1
-            self.CPU.current_time_in_queue = 0
-            
-            return True
-        return False
-
-    def check_quantum(self):
-        if self.Q1.quantum_used >= self.Q1.quantum_time:
-            self.Q1.enqueue_process(self.CPU)
-            self.Q1.quantum_used = 0
-
-            return True
-        return False
-
     def check_IO(self):
         if (self.IO.process_queue):
             io_processes = self.IO.process_queue[:]
@@ -250,28 +208,58 @@ class MLFQ:
 
                     proc.burst_times.pop(0)
                     proc.current_time_burst = 0
-        
+
+    def check_CPU(self, curr_queue: Queue):
+        # check if process is finished
+        if len(self.CPU.burst_times) == 1:
+            self.finished_processes.append(self.CPU)
+            self.CPU = curr_queue.dequeue_process()
+
+        # check if there is next burst
+        else:
+            self.IO.enqueue_process(self.CPU)
+            self.CPU.current_time_in_queue = 0
+
+        # reset current_time_burst and remove finished burst time
+        self.CPU.current_time_burst = 0
+        self.CPU.burst_times.pop(0)
+
+    def check_time_allotment(self):
+        self.demoted_process = self.CPU
+
+        lower_queue = self.check_current_queue(self.CPU.current_queue + 1)
+        lower_queue.enqueue_process(self.CPU)
+
+        # reset current_time_in_queue since demoted
+        self.CPU.current_queue += 1
+        self.CPU.current_time_in_queue = 0
+
+    def check_quantum(self):
+        if self.is_time_allotment_done(self.Q1):
+            self.check_time_allotment()
+        else:
+            self.Q1.enqueue_process(self.CPU)
+        self.Q1.quantum_used = 0
+
+    def is_quantum_done(self) -> bool:
+        return self.Q1.quantum_used >= self.Q1.quantum_time
+    
+    def is_time_allotment_done(self, curr_queue: RoundRobinQueue | FirstComeFirstServeQueue) -> bool:
+        return self.CPU.current_time_in_queue >= curr_queue.time_allotment
+    
+    def is_CPU_done(self) -> bool:
+        return self.CPU.current_time_burst >= self.CPU.burst_times[0]
+
     def next_process(self):
-        current_queue: Queue = self.check_current_queue(self.CPU)
-        is_quantum, is_time_allotment = False, False
+        curr_queue: Queue = self.check_current_queue(self.CPU.current_queue)
 
-        if current_queue == self.Q1:
-            is_quantum = self.check_quantum()
         
-        if isinstance(current_queue, RoundRobinQueue) or isinstance(current_queue, FirstComeFirstServeQueue):
-            if not is_quantum:
-                is_time_allotment = self.check_time_allotment(current_queue)
 
-        if not is_quantum or not is_time_allotment:
-            self.check_CPU()
-        
         self.check_IO()
 
-        # tama ba to na context switch agad wala na condition?
-        
-
         # context switch
-        self.is_in_context_switch = True
-        self.CPU = EMPTY_PROCESS
-        self.process_holder = self.next_process_to_run()
+        if self.is_quantum_done() or self.is_time_allotment_done(curr_queue) or self.is_CPU_done():
+            self.is_in_context_switch = True
+            self.CPU = EMPTY_PROCESS
+            self.process_holder = self.next_process_to_run()
 
