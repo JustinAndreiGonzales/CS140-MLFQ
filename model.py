@@ -164,7 +164,7 @@ class MLFQ:
         self.curr_time += 1
 
         # increment IO processes
-        if (len(self.IO.process_queue) != 0):
+        if (self.IO.process_queue):
             for proc in self.IO.process_queue:
                 proc.current_time_burst += 1
 
