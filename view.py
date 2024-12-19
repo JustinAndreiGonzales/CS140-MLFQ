@@ -29,7 +29,7 @@ class ProcessesStats:
     arrival_times: list[int]
     waiting_times: list[int]
     turnaround_times: list[int]
-    avg_turnaround_time = float
+    avg_turnaround_time: float
 
 class View:
     def __init__(self):
