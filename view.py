@@ -54,11 +54,11 @@ class View:
     def print_timestamp(self, ts: Timestamp) -> None:
         print(f"At Time = {ts.time}")
         if (ts.arriving_process != None):
-            print(f"Arriving : [{", ".join(ts.arriving_process)}]")
+            print(f"Arriving : [{', '.join(ts.arriving_process)}]")
         if (ts.process_done != None):
             for p in ts.process_done:
                 print(f"{p} DONE")
-        print(f"Queues : [{", ".join(ts.q1)}];[{", ".join(ts.q2)}];[{", ".join(ts.q3)}]")
+        print(f"Queues : [{', '.join(ts.q1)}];[{', '.join(ts.q2)}];[{', '.join(ts.q3)}]")
 
         if (ts.is_in_context_switch):
             print(f"CPU : CONTEXT SWITCHING TO {ts.switching_process}")
@@ -68,7 +68,7 @@ class View:
             print(f"CPU : {ts.cpu}")
             
         if (ts.io != None):
-            print(f"I/O : [{", ".join(ts.io)}]")
+            print(f"I/O : [{', '.join(ts.io)}]")
         if (ts.demoted != None):
             print(f"{ts.demoted} DEMOTED\n")
 

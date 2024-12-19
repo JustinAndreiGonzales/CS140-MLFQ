@@ -12,6 +12,9 @@ class Process:
         self.completion_time: int = -1 # what is starting value?
         self.waiting_time: int = -1 # what is starting value?
 
+    def __repr__(self) -> str:
+        return f"P [{self.name}, {self.arrival_time}]"
+
     def __lt__(self, other):
         self_burst = self.burst_times[0] - self.current_time_burst
         other_burst = other.burst_times[0] = other.current_time_burst 
@@ -116,8 +119,8 @@ class MLFQ:
         self.finished_processes: list[Process] = []
         self.demoted_process: Process = EMPTY_PROCESS
     
-    def enqueue_to_queue(self, queue: Queue, process: Process) -> None:
-        queue.enqueue_process(process)
+    # def enqueue_to_queue(self, queue: Queue, process: Process) -> None:
+    #     queue.enqueue_process(process)
 
     def dequeue_process(self, queue: Queue) -> Process:
         return queue.dequeue_process()
@@ -149,6 +152,15 @@ class MLFQ:
         
         return Process(" ", -1, []) # dummy
 
+    def check_arriving_processes(self):
+        if (self.incoming_processes):
+            processes_to_check = self.incoming_processes[:]
+            for proc in processes_to_check:
+                if(self.curr_time == proc.arrival_time):
+                    self.incoming_processes.remove(proc)
+                    self.Q1.enqueue_process(proc)
+                    self.newlyaddedprocesses.append(proc)
+
     def update_time_stamp(self) -> None:
         # increment time
         self.curr_time += 1
@@ -171,7 +183,7 @@ class MLFQ:
         # if CPU is empty
         if (self.CPU == EMPTY_PROCESS):
             return
-        print("time")
+
         # increment CPU process
         self.CPU.current_time_burst += 1
         self.CPU.current_time_in_queue += 1
@@ -181,11 +193,7 @@ class MLFQ:
             self.Q1.increment_quantum()
 
         # enqueue newly arriving processes
-        if (self.incoming_processes):
-            for proc in self.incoming_processes:
-                if(self.curr_time == proc.arrival_time):
-                    self.incoming_processes.remove(proc)
-                    self.Q1.enqueue_process(proc)
+        self.check_arriving_processes()
 
         self.next_process()
 
@@ -194,6 +202,11 @@ class MLFQ:
             # check if process is finished
             if len(self.CPU.burst_times) == 1:
                 self.finished_processes.append(self.CPU)
+
+                """
+                update stuff needed for a finished process
+                """
+
             # check if there is next burst
             else:
                 self.IO.enqueue_process(self.CPU)
@@ -226,7 +239,8 @@ class MLFQ:
 
     def check_IO(self):
         if (self.IO.process_queue):
-            for proc in self.IO.process_queue:
+            io_processes = self.IO.process_queue[:]
+            for proc in io_processes:
                 current_queue = self.check_current_queue(proc.current_queue)
 
                 if (proc.current_time_burst == proc.burst_times[0]):
@@ -251,6 +265,9 @@ class MLFQ:
             self.check_CPU()
         
         self.check_IO()
+
+        # tama ba to na context switch agad wala na condition?
+        
 
         # context switch
         self.is_in_context_switch = True

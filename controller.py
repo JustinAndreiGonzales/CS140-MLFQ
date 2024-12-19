@@ -69,8 +69,12 @@ class Controller:
         self.input_to_model(inputs)
         self._model.sort_incoming_processes()
         self._model.processes = sorted(self._model.processes, key=lambda p: p.name)
-        self._model.CPU = self._model.incoming_processes.pop(0)
-        self.get_timestamp() # for time = 0
+
+         # for time = 0
+        self._model.check_arriving_processes()
+        self._model.CPU = self._model.Q1.dequeue_process()
+        self.get_timestamp()
+        
         while (self._model.incoming_processes or \
                 self._model.Q1.process_queue or \
                 self._model.Q2.process_queue or \
