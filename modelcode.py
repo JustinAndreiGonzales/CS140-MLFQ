@@ -1,57 +1,10 @@
-def check_current_queue(self, queue_index: int) -> Queue:
-    if (queue_index == 1):
-        return self.Q1
-    elif (queue_index == 2):
-        return self.Q2
-    else: #queue_index == 3
-        return self.Q3
 
-def check_arriving_processes(self):
-    if (self.incoming_processes):
-        processes_to_check = self.incoming_processes[:]
-        for proc in processes_to_check:
-            if(self.curr_time == proc.arrival_time):
-                self.incoming_processes.remove(proc)
-                self.Q1.enqueue_process(proc)
-                self.newlyaddedprocesses.append(proc)
 
-def next_process_to_run(self) -> Process:
-    queue_index = self.CPU.current_queue
-    
-    while (queue_index < 3):
-        current_queue = self.check_current_queue(queue_index)
 
-        if current_queue.process_queue:
-            return current_queue.dequeue_process()
-        queue_index += 1
-    
-    return Process(" ", -1, []) # dummy
 
-def is_quantum_done(self, curr_queue: Queue) -> bool:
-    return isinstance(curr_queue, RoundRobinQueue) and self.Q1.quantum_used >= self.Q1.quantum_time:
 
-def is_time_allotment_done(self, curr_queue: Queue) -> bool:
-    if not isinstance(curr_queue, ShortestJobFirst):
-        return self.CPU.current_time_in_queue >= curr_queue.time_allotment
-    return False
 
-def is_burst_done(self) -> bool:
-    return self.CPU.current_time_burst >= self.CPU.burst_times[0]
 
-def check_IO(self):
-    if (self.IO.process_queue):
-        io_processes = self.IO.process_queue[:]
-        for proc in io_processes:
-            current_queue = self.check_current_queue(proc.current_queue)
-
-            if (proc.current_time_burst == proc.burst_times[0]):
-                self.IO.process_queue.remove(proc)
-                current_queue.enqueue_process(proc)
-
-                proc.burst_times.pop(0)
-                proc.current_time_burst = 0
-            
-            # if natapos sa IO yung process
 
 def update_time_stamp(self) -> None:
     # increment time
