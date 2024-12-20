@@ -15,7 +15,7 @@ class Process:
 
     def __lt__(self, other):
         self_burst = self.burst_times[0] - self.current_time_burst
-        other_burst = other.burst_times[0] = other.current_time_burst 
+        other_burst = other.burst_times[0] - other.current_time_burst 
         return self_burst < other_burst
 
     # @property
@@ -214,7 +214,6 @@ class MLFQ:
         just_finished_context_switch = False
         if (self.is_in_context_switch):
             # if context switch done
-            print(f"CS {self.context_switch_time_used}/{self.context_switch_time}") # <--- debugging
             if self.context_switch_time <= self.context_switch_time_used:
                 self.CPU = self.process_holder
                 self.check_current_queue(self.CPU.current_queue).dequeue_process()
@@ -280,7 +279,6 @@ class MLFQ:
 
         #added
         is_process_done = False
-
         if is_burst_done:
             # if process is finished
             if len(self.CPU.burst_times) == 1:
@@ -320,8 +318,8 @@ class MLFQ:
         self.Q3.sort_queue()
 
         # context switch will occur
+        next_proc = self.next_process_to_run()
         if is_burst_done or is_time_allotment_done or is_quantum_done:
-            next_proc = self.next_process_to_run()
             # there is process in queue
             if next_proc != EMPTY_PROCESS:
                 # if there is context switch time
@@ -336,7 +334,6 @@ class MLFQ:
                 self.CPU = EMPTY_PROCESS
         # added elif (priority higher queue)
         elif highest_queue_returned < self.CPU.current_queue:
-            next_proc = self.next_process_to_run()
             self.check_current_queue(self.CPU.current_queue).enqueue_process(self.CPU)
             if self.context_switch_time:
                 self.is_in_context_switch = True
@@ -346,8 +343,8 @@ class MLFQ:
                 self.CPU = next_proc
                 self.check_current_queue(self.CPU.current_queue).dequeue_process()
         # added elif if cpu currently empty (no cs needed?)
-        elif is_cpu_currently_empty and not self.is_in_context_switch:
-            self.CPU = self.next_process_to_run()
+        elif is_cpu_currently_empty and not self.is_in_context_switch and next_proc != EMPTY_PROCESS:
+            self.CPU = next_proc
             self.check_current_queue(self.CPU.current_queue).dequeue_process()
         # elif self.next_process_to_run() == self.CPU:
         #     self.CPU = self.next_process_to_run()

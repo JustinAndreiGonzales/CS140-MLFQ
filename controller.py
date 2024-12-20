@@ -74,7 +74,7 @@ class Controller:
         self._model.CPU = self._model.Q1.dequeue_process()
         self.get_timestamp()
 
-        while (self._model.incoming_processes or self._model.Q1.process_queue or self._model.Q2.process_queue or self._model.Q3.process_queue or self._model.IO.process_queue or self._model.CPU != EMPTY_PROCESS):
+        while (self._model.incoming_processes or self._model.Q1.process_queue or self._model.Q2.process_queue or self._model.Q3.process_queue or self._model.IO.process_queue or (self._model.CPU != EMPTY_PROCESS and not self._model.is_in_context_switch)):
             self._model.update_time_stamp()
             self.get_timestamp()
 
