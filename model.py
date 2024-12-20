@@ -186,7 +186,7 @@ class MLFQ:
             for proc in io_processes:
                 current_queue = self.check_current_queue(proc.current_queue)
 
-                if (proc.current_time_burst == proc.burst_times[0]):
+                if (proc.current_time_burst >= proc.burst_times[0]):
                     self.IO.process_queue.remove(proc)
                     # if process is done
                     if (len(proc.burst_times) == 1):
@@ -211,6 +211,7 @@ class MLFQ:
                 proc.current_time_burst += 1
 
         # during context switch
+        just_finished_context_switch = False
         if (self.is_in_context_switch):
             # if context switch done
             print(f"CS {self.context_switch_time_used}/{self.context_switch_time}") # <--- debugging
@@ -220,21 +221,27 @@ class MLFQ:
                 # changed to 1 (isip better way)
                 self.context_switch_time_used = 1
                 self.is_in_context_switch = False
+                # added condition if newly finished cs
+                just_finished_context_switch = True
             else:
                 self.context_switch_time_used += 1
-            return
+            # di dapat mag return 
+            # madami pa ichecheck sa baba
+            # return
 
         # if CPU is empty
         is_cpu_currently_empty = True
         if self.CPU != EMPTY_PROCESS:
             is_cpu_currently_empty = False
-            # increment CPU process
-            self.CPU.current_time_burst += 1
-            self.CPU.current_time_in_queue += 1
+            # must not increment if newly CSed
+            if not just_finished_context_switch:
+                # increment CPU process
+                self.CPU.current_time_burst += 1
+                self.CPU.current_time_in_queue += 1
 
-            # if currently running process is in Q1
-            if (self.CPU.current_queue == 1):
-                self.Q1.increment_quantum() 
+                # if currently running process is in Q1
+                if (self.CPU.current_queue == 1):
+                    self.Q1.increment_quantum() 
 
         # enqueue newly arriving processes
         self.check_arriving_processes()
@@ -271,12 +278,16 @@ class MLFQ:
             is_time_allotment_done = self.is_time_allotment_done(curr_queue)
             is_quantum_done = self.is_quantum_done(curr_queue)
 
+        #added
+        is_process_done = False
+
         if is_burst_done:
             # if process is finished
             if len(self.CPU.burst_times) == 1:
                 self.CPU.completion_time = self.curr_time
                 self.CPU.waiting_time = self.CPU.completion_time - self.CPU.arrival_time - self.CPU.total_burst
                 self.finished_processes.append(self.CPU)
+                is_process_done = True
             else: # enqueue to IO
                 self.IO.enqueue_process(self.CPU)
                 # reset burst and allotment and remove finished burst time
@@ -295,7 +306,7 @@ class MLFQ:
         if is_quantum_done and not is_time_allotment_done and not is_burst_done:
             self.Q1.enqueue_process(self.CPU)
 
-        if is_time_allotment_done:
+        if is_time_allotment_done and not is_process_done:
             self.demoted_process = self.CPU
             lower_queue = self.check_current_queue(self.CPU.current_queue + 1)
             self.CPU.current_queue += 1
@@ -314,11 +325,11 @@ class MLFQ:
             # there is process in queue
             if next_proc != EMPTY_PROCESS:
                 # if there is context switch time
-                if self.context_switch_time:            
+                if self.context_switch_time and (self.CPU != next_proc):            
                     self.is_in_context_switch = True
                     self.CPU = EMPTY_PROCESS
                     self.process_holder = next_proc
-                else:
+                else: # no cs time or next_process to run is same process
                     self.CPU = next_proc
                     self.check_current_queue(self.CPU.current_queue).dequeue_process()
             else:
@@ -335,7 +346,9 @@ class MLFQ:
                 self.CPU = next_proc
                 self.check_current_queue(self.CPU.current_queue).dequeue_process()
         # added elif if cpu currently empty (no cs needed?)
-        elif is_cpu_currently_empty:
-            if highest_queue_returned != 4:
-                self.CPU = self.next_process_to_run()
-                self.check_current_queue(self.CPU.current_queue).dequeue_process()
+        elif is_cpu_currently_empty and not self.is_in_context_switch:
+            self.CPU = self.next_process_to_run()
+            self.check_current_queue(self.CPU.current_queue).dequeue_process()
+        # elif self.next_process_to_run() == self.CPU:
+        #     self.CPU = self.next_process_to_run()
+        #     self.check_current_queue(self.CPU.current_queue).dequeue_process()
