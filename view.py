@@ -56,11 +56,14 @@ class View:
 
     def print_timestamp(self, ts: Timestamp) -> None:
         print(f"At Time = {ts.time}")
+
         if (ts.arriving_process != None):
             print(f"Arriving : [{', '.join(ts.arriving_process)}]")
+
         if (ts.process_done != None):
             for p in ts.process_done:
                 print(f"{p} DONE")
+
         print(f"Queues : [{', '.join(ts.q1)}];[{', '.join(ts.q2)}];[{', '.join(ts.q3)}]")
 
         if (ts.is_in_context_switch):
@@ -72,8 +75,10 @@ class View:
             
         if (ts.io != None):
             print(f"I/O : [{', '.join(ts.io)}]")
+
         if (ts.demoted != None):
             print(f"{ts.demoted} DEMOTED")
+            
         print("")
 
     def print_statistics(self, processes_info: ProcessesStats) -> None:
@@ -81,10 +86,11 @@ class View:
             completion_time = processes_info.completion_times[i]
             arrival_time = processes_info.arrival_times[i]
             ta_time = processes_info.turnaround_times[i]
-            print(f"Turn-around time for Process {process_name} : {completion_time} - {arrival_time} = {ta_time}")
+            print(f"Turn-around time for Process {process_name} : {completion_time} - {arrival_time} = {ta_time} ms")
 
-        print(f"Average Turn-around time = {processes_info.avg_turnaround_time}") 
+        avg_tt = processes_info.avg_turnaround_time
+        print(f"Average Turn-around time = {int(avg_tt) if avg_tt.is_integer() else avg_tt} ms") 
 
         for i, process_name in enumerate(processes_info.process_names):
             waiting_time = processes_info.waiting_times[i]
-            print(f"Waiting time for Process {process_name} : {waiting_time}")
+            print(f"Waiting time for Process {process_name} : {waiting_time} ms")

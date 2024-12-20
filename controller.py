@@ -8,10 +8,13 @@ class Controller:
 
     def get_timestamp(self):
         time = self._model.curr_time
+
         arriving_processes = None if not self._model.newlyaddedprocesses else [p.name for p in self._model.newlyaddedprocesses]
         self._model.newlyaddedprocesses = []
+
         processes_done = None if not self._model.finished_processes else [p.name for p in self._model.finished_processes]
         self._model.finished_processes = []
+
         q1 = []
         q2 = []
         q3 = []
@@ -29,7 +32,9 @@ class Controller:
         switching_process = self._model.process_holder.name
 
         cpu = None if self._model.CPU.arrival_time == -1 else self._model.CPU.name
+
         io = None if not self._model.IO.process_queue else [p.name for p in self._model.IO.process_queue]
+
         demoted = None if self._model.demoted_process.arrival_time == -1 else self._model.demoted_process.name
         self._model.demoted_process = EMPTY_PROCESS
 
@@ -65,7 +70,9 @@ class Controller:
         
 
     def run(self, inputs: User_input):
+        # gets inputs and sends them to the MLFQ
         self.input_to_model(inputs)
+
         self._model.sort_incoming_processes()
         self._model.processes = sorted(self._model.processes, key=lambda p: p.name)
 
@@ -74,9 +81,11 @@ class Controller:
         self._model.CPU = self._model.Q1.dequeue_process()
         self.get_timestamp()
 
+        # loops until no more incoming proceses / Q1 to Q3 is empty / IO is empty / CPU is empty
         while (self._model.incoming_processes or self._model.Q1.process_queue or self._model.Q2.process_queue or self._model.Q3.process_queue or self._model.IO.process_queue or (self._model.CPU != EMPTY_PROCESS and not self._model.is_in_context_switch)):
             self._model.update_time_stamp()
             self.get_timestamp()
 
-        print("SIMULATION DONE\n") # tinamad na
+        print("SIMULATION DONE\n")
+        
         self.get_statistics()
