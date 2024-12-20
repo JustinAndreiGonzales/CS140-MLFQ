@@ -18,19 +18,6 @@ class Process:
         other_burst = other.burst_times[0] - other.current_time_burst 
         return self_burst < other_burst
 
-    # @property
-    # def get_arrival_time(self) -> int:
-    #     return self.get_arrival_time
-    
-    # def increment_time_burst(self) -> None:
-    #     self.current_time_burst += 1
-
-    # def increment_allotment_in_queue(self) -> None:
-    #     self.current_time_in_queue += 1
-
-    # def dequeue_burst_time(self):
-    #     ...
-
 EMPTY_PROCESS = Process(" ", -1, []) # dummy 
 
 class Queue(Protocol):
@@ -114,9 +101,6 @@ class MLFQ:
         self.finished_processes: list[Process] = []
         self.demoted_process: Process = EMPTY_PROCESS
 
-    # def dequeue_process(self, queue: Queue) -> Process:
-    #     return queue.dequeue_process()
-
     def add_process(self, process: Process) -> None:
         self.processes.append(process)
         self.incoming_processes.append(process)
@@ -144,18 +128,6 @@ class MLFQ:
             queue_index += 1
         
         return EMPTY_PROCESS # dummy
-    
-    # def next_process_to_run(self) -> Process:
-    #     queue_index = self.CPU.current_queue
-        
-    #     while (queue_index < 3):
-    #         current_queue = self.check_current_queue(queue_index)
-
-    #         if current_queue.process_queue:
-    #             return current_queue.process_queue[0]
-    #         queue_index += 1
-        
-    #     return EMPTY_PROCESS # dummy
 
     def check_arriving_processes(self):
         if (self.incoming_processes):
@@ -224,9 +196,6 @@ class MLFQ:
                 just_finished_context_switch = True
             else:
                 self.context_switch_time_used += 1
-            # di dapat mag return 
-            # madami pa ichecheck sa baba
-            # return
 
         # if CPU is empty
         is_cpu_currently_empty = True
@@ -246,23 +215,6 @@ class MLFQ:
         self.check_arriving_processes()
 
         self.next_process(is_cpu_currently_empty)
-
-        # # if CPU is empty
-        # if (self.CPU == EMPTY_PROCESS):
-        #     return
-
-        # # increment CPU process
-        # self.CPU.current_time_burst += 1
-        # self.CPU.current_time_in_queue += 1
-
-        # # if currently running process is in Q1
-        # if (self.CPU.current_queue == 1):
-        #     self.Q1.increment_quantum() 
-
-        # # enqueue newly arriving processes
-        # self.check_arriving_processes()
-
-        # self.next_process()
 
     # added bool
     def next_process(self, is_cpu_currently_empty: bool):
@@ -346,6 +298,3 @@ class MLFQ:
         elif is_cpu_currently_empty and not self.is_in_context_switch and next_proc != EMPTY_PROCESS:
             self.CPU = next_proc
             self.check_current_queue(self.CPU.current_queue).dequeue_process()
-        # elif self.next_process_to_run() == self.CPU:
-        #     self.CPU = self.next_process_to_run()
-        #     self.check_current_queue(self.CPU.current_queue).dequeue_process()
