@@ -333,7 +333,7 @@ class MLFQ:
             else:
                 self.CPU = EMPTY_PROCESS
         # added elif (priority higher queue)
-        elif highest_queue_returned < self.CPU.current_queue:
+        elif highest_queue_returned < self.CPU.current_queue or (next_proc != EMPTY_PROCESS and next_proc.current_queue < self.CPU.current_queue):
             self.check_current_queue(self.CPU.current_queue).enqueue_process(self.CPU)
             if self.context_switch_time:
                 self.is_in_context_switch = True
