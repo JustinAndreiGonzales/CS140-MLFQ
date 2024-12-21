@@ -89,7 +89,6 @@ class MLFQ:
         self.Q3 = ShortestJobFirst()
         self.IO = IO()
         self.CPU: Process = EMPTY_PROCESS # dummy 
-        self.is_finish_running: bool = False
 
         self.context_switch_time = context_switch_time
         self.context_switch_time_used = 1    # time at context switch
